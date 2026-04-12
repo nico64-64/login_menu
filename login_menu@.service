@@ -1,0 +1,25 @@
+[Unit]
+Description=login menu on %I
+Conflict=getty@%i.service
+After=systemd-user-sessions.service plymouth-quit-wait.service
+Before=getty-pre.target
+
+ConditionPathExists=/dev/tty0
+
+[Service]
+ExecStart=-/sbin/login_menu
+Type=idle
+Restart=always
+RestartSec=0
+UtmpIdentifier=%I
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/%I
+TTYReset=yes
+TTYVHangup=yes
+IgnoreSIGPIPE=no
+SendSIGHUP=yes
+
+[Install]
+WantedBy=getty.target
+DefaultInstance=tty1
