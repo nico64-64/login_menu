@@ -74,4 +74,4 @@ Ce programme exécute d'autres programmes. Cela peut sembler banal, mais ce ne l
 
 Par conséquent, bien que les failles de sécurité les plus évidentes aient été comblées ou soient facilement évitables, ce programme NE PEUT PAS être considéré aussi sécuritaire que le login manager déjà en place.
 
-**Si la sécurité de votre ordinateur au moment du login vous conserne, n'utilisez pas ce programme**.
+**Si la sécurité de votre ordinateur au moment du login vous concerne, n'utilisez pas ce programme**.
