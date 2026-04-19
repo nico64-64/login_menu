@@ -7,6 +7,9 @@
 #include <errno.h>
 
 
+#define VERSION "1.4"
+
+
 #define mvaddstrc(position_y, texte);	mvaddstr(position_y, (COLS - strlen(texte)) / 2, texte); //Affiche une string centrée en x
 
 
@@ -32,6 +35,7 @@ char date_heure[100]; //date et heure actuelle
 //Parametres modifiables à l'invocation:
 unsigned espacement = 1; //nombre de lignes vides entre chaque option
 bool quittable = FALSE; //indique si on peut quitter en entrant 'q'
+bool souris = FALSE; //active le support de la souris
 char nom_fichier[100] = "/etc/login_menu.conf"; //chemin d'accès et nom du fichier de configuration du programme
 
 

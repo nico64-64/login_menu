@@ -2,7 +2,7 @@
 
 
 int taille_nbre (int nbre)
-//Trouve le nombre de caracteres occupes par le nombre recu en parametre.
+//Trouve le nombre de caractères occupés par le nombre reçu en paramètre.
 {
 	unsigned compteur = 0;
 	int n = nbre;
@@ -17,7 +17,7 @@ int taille_nbre (int nbre)
 
 
 void quitter ()
-//Ferme le programme en liberant les ressources nesessaires et en reinitialisant le terminal.
+//Ferme le programme en libérant les ressources nécessaires et en réinitialisant le terminal.
 {
 	endwin();
 	if (options != NULL)
@@ -33,11 +33,12 @@ void erreur (char msg[], char details[], int valeur)
 	mvprintw(LINES - 5, (COLS - strlen(msg) - strlen("Erreur: ")) / 2, "Erreur: %s", msg);
 	mvprintw(LINES - 4, (COLS - strlen(details) - strlen("Details: ")) / 2, "Details: %s", details);
 	mvprintw(LINES - 3, (COLS - taille_nbre(valeur) - strlen("Valeur: ")) / 2, "Valeur: %d", valeur);
+	refresh();
 }
 
 
 void gestion_arguments (char arg[])
-//Gere les arguments recus par le programme.
+//Gère les arguments reçus par le programme.
 {
 	static bool fconfig_en_attente = FALSE;
 	static bool espacement_en_attente = FALSE;
@@ -46,7 +47,7 @@ void gestion_arguments (char arg[])
 	{
 		if (!strcmp(arg, "0"))
 		{espacement = 0;}
-		else if (!strcmp(arg, "1")) {} //par defaut
+		else if (!strcmp(arg, "1")) {} //par défaut
 		else if (!strcmp(arg, "2"))
 		{espacement = 2;}
 		else if (!strcmp(arg, "3"))
@@ -66,22 +67,23 @@ void gestion_arguments (char arg[])
 	{strcpy(nom_fichier, arg); fconfig_en_attente = FALSE;}
 
 	else if (!strcmp(arg, "--version") || !strcmp(arg, "-v"))
-	{printf("version 1.3\n"); exit(0);}
+	{printf("version %s\n", VERSION); exit(0);}
 
 	else if (!strcmp(arg, "--help") || !strcmp(arg, "-h") || !strcmp(arg, "--aide") || !strcmp(arg, "-a") || !strcmp(arg, "-?"))
 	{
-		printf("Menu de connexion (pre-login)\n\n");
+		printf("Menu de connexion (pré-login)\n\n");
 		printf("Usage:\n/sbin/login_menu [--arguments]\n\n");
 
-		printf("Ce petit programme génère un menu ncurses permettant de choisir de quelle manière se connecter a l'ordinateur.\n");
+		printf("Ce petit programme génère un menu ncurses permettant de choisir de quelle manière se connecter à l'ordinateur.\n");
 		printf("Il est normalement appelé par systemd en tant que \"login manager\".\n\n");
 
 		printf("Voici la liste des arguments que peut recevoir ce programme:\n");
-		printf("--version (-v) -> Affiche la version du programme et quitte.\n");
-		printf("--aide (-?) -> Affiche ce texte et quitte.\n");
-		printf("--quittable (-q) -> Permet de quitter le programme en entrant \"q\".\n");
-		printf("--espacement (-e) -> Indique que le prochain argument sera le nombre de lignes vides a laisser entre chaque option (de 0 a 6 seulement).\n");
-		printf("--fconfig (-f) -> Indique que le prochain argument sera le chemin d'acces au fichier de configuration (sans espace!).\n");
+		printf("--version (-v)     -> Affiche la version du programme et quitte.\n");
+		printf("--aide (-?)        -> Affiche ce texte et quitte.\n");
+		printf("--avec-souris (-s) -> Démarre le programme avec le support de la souris.\n");
+		printf("--quittable (-q)   -> Permet de quitter le programme en entrant \"q\".\n");
+		printf("--espacement (-e)  -> Indique que le prochain argument sera le nombre de lignes vides à laisser entre chaque option (de 0 a 6 seulement).\n");
+		printf("--fconfig (-f)     -> Indique que le prochain argument sera le chemin d'accès au fichier de configuration (sans espace!).\n");
 
 		exit(0);
 	}
@@ -91,6 +93,9 @@ void gestion_arguments (char arg[])
 
 	else if (!strcmp(arg, "--espacement") || !strcmp(arg, "-e"))
 	{espacement_en_attente = TRUE;}
+	
+	else if (!strcmp(arg, "--avec-souris") || !strcmp(arg, "-s"))
+	{souris = TRUE;}
 
 	else if (!strcmp(arg, "--fconfig") || !strcmp(arg, "--config") || !strcmp(arg, "-f"))
 	{fconfig_en_attente = TRUE;}
@@ -99,7 +104,7 @@ void gestion_arguments (char arg[])
 
 bool lecture_fichier ()
 //Lit et applique le fichier de configuration du programme.
-//Renvoie TRUE en cas de reussite et FALSE en cas d'echec.
+//Renvoie TRUE en cas de réussite et FALSE en cas d'échec.
 {
 	FILE* fconfig = fopen(nom_fichier, "r");
 	char ligne[200];
@@ -107,7 +112,12 @@ bool lecture_fichier ()
 	bool pas_de_rafraichissement = FALSE;
 
 	if (fconfig == NULL)
-	{rafraichir(); quittable = TRUE; erreur("Impossible d'ouvrir le fichier de configuration!", (char*) nom_fichier, 0); return FALSE;}
+	{
+		rafraichir();
+		quittable = TRUE;
+		erreur("Impossible d'ouvrir le fichier de configuration!", (char*) nom_fichier, 0);
+		return FALSE;
+	}
 
 	//Trouve le nombre d'options inscrites dans le fichier:
 	nbre_options = 0;
@@ -120,7 +130,12 @@ bool lecture_fichier ()
 	fclose(fconfig);
 
 	if (!nbre_options)
-	{rafraichir(); quittable = TRUE; erreur("Le fichier de configuration ne contient aucune option valide!", (char*) nom_fichier, 0); return FALSE;}
+	{
+		rafraichir();
+		quittable = TRUE;
+		erreur("Le fichier de configuration ne contient aucune option valide!", (char*) nom_fichier, 0);
+		return FALSE;
+	}
 
 	//Initialise l'array des options:
 	options = calloc(nbre_options, sizeof(struct option));
@@ -136,27 +151,50 @@ bool lecture_fichier ()
 			//nom:
 			mot = strtok(NULL, " \t\n");
 			if (mot == NULL || !strcmp(mot, ";") || !strcmp(mot, ",") || !strcmp(mot, ":") || !strcmp(mot, ":") || !strcmp(mot, "]"))
-			{rafraichir(); quittable = TRUE; erreur("Le fichier de configuration contient une option sans nom! (valeur = numero d'option)", (char*) nom_fichier, c); return FALSE;}
+			{
+				rafraichir();
+				quittable = TRUE;
+				erreur("Le fichier de configuration contient une option sans nom! (valeur = numero d'option)", (char*) nom_fichier, c);
+				return FALSE;
+			}
 			strcpy(options[c].nom, mot);
 			mot = strtok(NULL, " \t\n");
 			while (mot != NULL && strcmp(mot, ";") != 0 && strcmp(mot, ",") != 0 && strcmp(mot, ":") != 0)
-			{strcat(options[c].nom, " "); strcat(options[c].nom, mot); mot = strtok(NULL, " \t\n");}
+			{
+				strcat(options[c].nom, " ");
+				strcat(options[c].nom, mot);
+				mot = strtok(NULL, " \t\n");
+			}
 			if (!c || strlen(options[c].nom) > strlen(options[c-1].nom))
 			{longueur_sel = strlen(options[c].nom) + 4;}
 
 			//cmd:
 			mot = strtok(NULL, " \t\n");
 			if (mot == NULL || !strcmp(mot, ";") || !strcmp(mot, ",") || !strcmp(mot, ":"))
-			{rafraichir(); quittable = TRUE; erreur("Le fichier de configuration contient une option sans commande! (valeur = numero d'option)", (char*) nom_fichier, c); return FALSE;}
+			{
+				rafraichir();
+				quittable = TRUE;
+				erreur("Le fichier de configuration contient une option sans commande! (valeur = numero d'option)", (char*) nom_fichier, c);
+				return FALSE;
+			}
 			strcpy(options[c].cmd, mot);
 			mot = strtok(NULL, " \t\n");
 			while (mot != NULL && strcmp(mot, ";") != 0 && strcmp(mot, ",") != 0 && strcmp(mot, ":") != 0)
-			{strcat(options[c].cmd, " "); strcat(options[c].cmd, mot); mot = strtok(NULL, " \t\n");}
+			{
+				strcat(options[c].cmd, " ");
+				strcat(options[c].cmd, mot);
+				mot = strtok(NULL, " \t\n");
+			}
 
 			//final:
 			mot = strtok(NULL, " \t\n");
 			if (mot == NULL || (strcmp(mot, "FALSE") != 0 && strcmp(mot, "TRUE") != 0))
-			{rafraichir(); erreur("Le fichier de configuration contient une option qui n'indique pas comment elle doit etre executee! (valeur = numero d'option)", (char*) nom_fichier, c); options[c].final = FALSE; pas_de_rafraichissement = TRUE;}
+			{
+				rafraichir();
+				erreur("Le fichier de configuration contient une option qui n'indique pas comment elle doit etre executee! (valeur = numero d'option)", (char*) nom_fichier, c);
+				options[c].final = FALSE;
+				pas_de_rafraichissement = TRUE;
+			}
 			else
 			{
 				if (!strcmp(mot, "FALSE"))
@@ -177,7 +215,7 @@ bool lecture_fichier ()
 
 
 void rafraichir ()
-//Affiche le menu a l'ecran.
+//Affiche le menu à l'écran.
 {
 	time_t heure_raw;
 	struct tm* heure;
@@ -222,14 +260,15 @@ void rafraichir ()
 int main (int argc, char* argv[])
 //S'occupe de l'initialisation du programme et de la main loop.
 {
-	int input;
-
+	int input; //caractère lu du clavier
+	bool key_simulee = FALSE; //setté à TRUE si un clic de souris a été transformé en faux évènement clavier
+	MEVENT mev;
 
 	//Gestion des arguments:
 	for (unsigned c = 1; c < argc; c++)
 	{gestion_arguments(argv[c]);}
 
-	//Création d'une locale de base si on n'en trouve pas une:
+	//Utilisation de la locale de base si on n'en trouve pas une:
 	if (!setlocale(LC_ALL, ""))
 	{setlocale(LC_ALL, "C.UTF-8");}
 
@@ -242,6 +281,10 @@ int main (int argc, char* argv[])
 	start_color();
 	init_pair(10, COLOR_BLACK, COLOR_WHITE);
 	curs_set(0);
+
+	//Initialisation de la prise en charge de la souris (si activée):
+	if (souris && !mousemask(ALL_MOUSE_EVENTS, NULL))
+	{erreur("Ce terminal ne supporte pas l'utilisation de la souris.", "Démarrez le programme sans l'option pour ne plus voir ce message.", 0); sleep(3);}
 
 	//Trouve le nom du tty:
 	strcpy(nom_tty, ttyname(STDIN_FILENO));
@@ -261,12 +304,17 @@ int main (int argc, char* argv[])
 	//Main Loop:
 	while (1)
 	{
-		do
-		{input = getch();} while (input == ERR);
+		if (!key_simulee)
+		{
+			do
+			{input = getch();} while (input == ERR);
+		}
+		else
+		{key_simulee = FALSE;}
 
 		switch (input)
 		{
-		//Resize (ne devrait jamais arriver):
+		//Resize (ne devrait jamais arriver sur un tty):
 		case KEY_RESIZE:
 			rafraichir();
 			break;
@@ -282,6 +330,13 @@ int main (int argc, char* argv[])
 		case KEY_UP:
 			if (choix > 0)
 			{choix--;}
+			rafraichir();
+			break;
+		
+		//Redessiner (ne devrait pas être utile, mais au cas où):
+		case 'r':
+		case 'R':
+			clear();
 			rafraichir();
 			break;
 
@@ -302,6 +357,23 @@ int main (int argc, char* argv[])
 			}
 			else //option != finale
 			{system(options[choix].cmd);}
+			break;
+		
+		//Souris
+		case KEY_MOUSE:
+			getmouse(&mev);
+			if (mev.bstate == 4 && mev.x >= (COLS - longueur_sel) / 2  && mev.x < (COLS + longueur_sel) / 2 /*clic gauche dans la zone centrale...*/ \
+				&& mev.y >= debut_liste && mev.y < debut_liste + nbre_options * (espacement + 1) && (mev.y - debut_liste) % (espacement + 1) == 0) //...sur une des entrée
+			{
+				choix = (mev.y - debut_liste) / (espacement + 1);
+				rafraichir();
+				key_simulee = TRUE;
+				input = 13;
+			}
+			else if (mev.bstate == 65536) //molette vers le haut
+			{key_simulee = TRUE; input = KEY_UP;}
+			else if (mev.bstate == 2097152) //molette vers le bas
+			{key_simulee = TRUE; input = KEY_DOWN;}
 			break;
 		}
 	}
