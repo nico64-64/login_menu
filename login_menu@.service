@@ -7,7 +7,7 @@ Before=getty-pre.target
 ConditionPathExists=/dev/tty0
 
 [Service]
-ExecStart=-/sbin/login_menu
+ExecStart=/sbin/login_menu -s
 Type=idle
 Restart=always
 RestartSec=0

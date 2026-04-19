@@ -370,9 +370,9 @@ int main (int argc, char* argv[])
 				key_simulee = TRUE;
 				input = 13;
 			}
-			else if (mev.bstate == 65536) //molette vers le haut
+			else if (mev.bstate == 65536) //molette vers le haut (ne fonctionne pas sur tty)
 			{key_simulee = TRUE; input = KEY_UP;}
-			else if (mev.bstate == 2097152) //molette vers le bas
+			else if (mev.bstate == 2097152) //molette vers le bas (ne fonctionne pas sur tty)
 			{key_simulee = TRUE; input = KEY_DOWN;}
 			break;
 		}

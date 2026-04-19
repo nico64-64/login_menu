@@ -8,8 +8,9 @@ Ce programme ne devrait pas être utilisé dans un contexte où la sécurité du
 ## Installation
 Vous devez d'abord installer les dépendances suivantes:
 - un compilateur C (gcc ou clang)
-- les en-têtes de développement de ncurses, préférablement la version wide-characters (cherchez un paquet dont le nom ressemble à libncursesw-dev)
-- systemd (pour le démarrage automatique)
+- la bibliothèque ncurses et ses en-têtes de développement, préférablement la version wide-characters (cherchez un paquet dont le nom ressemble à libncursesw et un autre ressemblant à libncursesw-dev)
+- gpm (facultatif; pour utiliser la souris dans un tty)
+- systemd (facultatif; pour le démarrage automatique)
 - git et un programme install compatible BSD (facultatifs; seulement pour suivre les instructions)
 
 Suivez les instructions suivantes pour installer correctement le programme:
@@ -61,6 +62,8 @@ Sinon, vous pouvez démarrer le programme manuellement depuis un terminal avec `
 Vous pouvez afficher la liste des arguments supportés avec `/sbin/login_menu --help`.
 
 Un argument particulièrement utile si vous démarrer le programme manuellement (pour le tester, par exemple) est `/sbin/login_menu -q`, puisque cela permet de quitter le programme en appuyant sur `q`. Je déconseille fortement d'activer cette option si ce n'est pas pour tester le programme.
+
+Pour activer le support de la souris, vous devez utiliser l'argument `-s`.
 
 ### Fichier de configuration
 Le fichier de configuration par défaut (/etc/login_menu.conf) permet de se connecter au système, de suspendre l'ordinateur, de le redémarrer et de l'éteindre. Vous pouvez y ajouter autant d'autres options que vous voulez (ou en enlever), mais assurez-vous de ne pas en mettre trop, car le programme ne vérifie pas si toutes les entrées fittent sur l'écran. Ça ne devrait quand même pas être un problème...
