@@ -1,4 +1,28 @@
+#include <ncurses.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <time.h>
+#include <locale.h>
+#include <errno.h>
 #include "menu.h"
+
+#define VERSION "1.4"
+
+
+struct option* options = NULL; //liste des options dans le menu
+unsigned nbre_options = 0; //nombre d'options lues dans le fichier de configuration
+unsigned longueur_sel; //longueur de la "barre" de sélection (déterminée par la longueur du plus long nom d'option)
+unsigned debut_liste; //position en y du 1er choix de la liste (mis à jour par rafraichir())
+unsigned choix = 0; //option présentement sélectionnée
+char nom_tty[20]; //nom du tty (tty1, pts0, etc.)
+char date_heure[100]; //date et heure actuelle
+
+//Parametres modifiables à l'invocation:
+unsigned espacement = 1; //nombre de lignes vides entre chaque option
+bool quittable = FALSE; //indique si on peut quitter en entrant 'q'
+bool souris = FALSE; //active le support de la souris
+char nom_fichier[100] = "/etc/login_menu.conf"; //chemin d'accès et nom du fichier de configuration du programme
 
 
 int taille_nbre (int nbre)
